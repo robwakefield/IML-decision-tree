@@ -20,11 +20,16 @@ def is_leaf_node(node):
 # (Defined in spec)
 def find_split(dataset):
     # TODO: implement
+    # attr is an int from 0-6 specifying which attribute from sample to split on
+    # value is a float
     return (attr, value)
 
 # Splits the dataset into 2 based on 'split_attr' and 'split_val'
-def split_dataset(dataset, split_attr, split_val):
-    # TODO: implement
+# Assume that r_dataset <- attr > value
+#         and l_dataset <- attr <= value
+def split_dataset(dataset, attr, value):
+    l_dataset = dataset[dataset[:, attr] <= value]
+    r_dataset = dataset[dataset[:, attr] > value]
     return (l_dataset, r_dataset)
 
 def decision_tree_learning(training_dataset, depth):
