@@ -2,28 +2,48 @@
 
 import numpy as np
 
-# TODO: Define class Leaf and Tree
+# Tree Node: (A Leaf Node just has a value. 'attribute', 'left' and 'right' are None)
+#   { 'attribute', 'value', 'left', 'right' }
 
 def find_split(dataset):
     # Chooses the attribute and the value that results in the highest information gain
     # (Defined in spec)
-    return
+    # TODO: implement
+    return (attr, value)
 
-def split_dataset(split, dataset):
-    # Splits the dataset into 2 based on `split`
-    return
+def split_dataset(dataset, split_attr, split_val):
+    # Splits the dataset into 2 based on 'split_attr' and 'split_val'
+    # TODO: implement
+    return (l_dataset, r_dataset)
 
 def decision_tree_learning(training_dataset, depth):
     # Check if all samples have the same label
     # TODO: Can len(training_dataset) == 0 ever?
     if len(training_dataset) == 0 or all(s.label == training_dataset[0].label for s in training_dataset):
-        return (Leaf(training_dataset[0].value), depth)
+        # Construct Leaf Node
+        return ({
+                'attribute' : None,
+                'value': training_dataset[0].value,
+                'left' : None,
+                'right' : None
+                }, depth)
     else:
-        split = find_split(training_dataset)
-        node = DTree(split)
-        l_branch, r_branch = split_dataset(training_dataset, split)
+        # Identify and split database to maximise information gain
+        split_attr, split_val = find_split(training_dataset)
+        l_dataset, r_dataset = split_dataset(training_dataset, split_attr, split_val)
+
+        # Recursively run decision tree on L and R branches
         l_branch, l_depth = decision_tree_learning(l_dataset, depth+1)
         r_branch, r_depth = decision_tree_learning(r_dataset, depth+1)
+        
+        # Construct the tree with root node as split value
+        node = {
+                'attribute' : split_attr, # e.g. X0, X4
+                'value' : split_val, # e.g. -55.5, -70.5
+                'left': l_branch,
+                'right': r_branch
+                }
+    
         return (node, max(l_depth, r_depth))
 
 if __name__ == "__main__":
