@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import random
 import math
 
 # Dataset: 2000x8 array
@@ -22,21 +21,35 @@ def is_leaf_node(node):
 # Chooses the attribute and the value that results in the highest information gain
 # attr: an int from 0-6 specifying which attribute from sample to split on. value: a float
 def find_split(dataset):
-    # TODO: implement (it currently chooses a random attr and value)
-    attr = random.randint(0, 6) # TODO: delete this line
-    value = random.randint(-100, 0) # TODO: delete this line
-    return (attr, value)
 
+    # Store all information gain of different attributes and values
+    info_gain = {}
+
+    for attr in range(dataset.shape[1] - 1):
+        # Sort on attribute value
+        sorted_dataset = dataset[np.argsort(dataset[:, attr])]
+        for row in range(sorted_dataset.shape[0] - 1):
+            if sorted_dataset[row, -1] == sorted_dataset[row + 1, -1]:
+                continue
+            # Average of two values
+            value = (sorted_dataset[row, attr] + sorted_dataset[row + 1, attr]) / 2
+            left, right = split_dataset(dataset, attr, value)
+            info_gain[(attr, value)] = cal_info_gain(dataset, left, right)
+
+    (selected_attr, selected_value) = max(info_gain, key=lambda k: info_gain[k])
+    return (selected_attr, selected_value)
+
+# Calculate entropy of dataset
 def cal_entropy(dataset):
     rooms = dataset[:, -1]
-    unique_values, counts = np.unique(rooms, return_counts=True)
-    # room_count = np.column_stack((unique_values, counts))
+    counts = np.unique(rooms, return_counts=True)[1]
     room_prob = counts / dataset.shape[0]
     entropy = 0
     for p in room_prob:
         entropy += -p * math.log2(p)
     return entropy
 
+# Calculate information gain after spitting original dataset into left and right
 def cal_info_gain(original, left, right):
     remainder = left.size * cal_entropy(left) + right.size * cal_entropy(right)
     remainder /= original.size
@@ -97,11 +110,15 @@ if __name__ == "__main__":
     noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
     print("noisy dataset")
     print(noisy_dataset)
+
+    # small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
+    # print("Data", small_dataset)
+    # find_split(small_dataset)
     
     tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
     print("depth:", depth)
 
-    # Testing
-    print(cal_entropy(clean_dataset))
+    # # Testing
+    # print(cal_entropy(small_dataset))
 
