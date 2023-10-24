@@ -81,6 +81,7 @@ if __name__ == "__main__":
     print("noisy dataset")
     print(noisy_dataset)
     
-    tree, _ = decision_tree_learning(clean_dataset, 0)
+    tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
+    print("depth:", depth)
 
