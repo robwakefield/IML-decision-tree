@@ -2,6 +2,7 @@
 
 import numpy as np
 import random
+import math
 
 # Dataset: 2000x8 array
 #  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label]x2000
@@ -25,6 +26,22 @@ def find_split(dataset):
     attr = random.randint(0, 6) # TODO: delete this line
     value = random.randint(-100, 0) # TODO: delete this line
     return (attr, value)
+
+def cal_entropy(dataset):
+    rooms = dataset[:, -1]
+    unique_values, counts = np.unique(rooms, return_counts=True)
+    # room_count = np.column_stack((unique_values, counts))
+    room_prob = counts / dataset.shape[0]
+    entropy = 0
+    for p in room_prob:
+        entropy += -p * math.log2(p)
+    return entropy
+
+def cal_info_gain(original, left, right):
+    remainder = left.size * cal_entropy(left) + right.size * cal_entropy(right)
+    remainder /= original.size
+    return cal_entropy(original) - remainder
+
 
 # Splits the dataset into 2 based on 'split_attr' and 'split_val'
 # Assume that r_dataset <- attr > value
@@ -84,4 +101,7 @@ if __name__ == "__main__":
     tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
     print("depth:", depth)
+
+    # Testing
+    print(cal_entropy(clean_dataset))
 
