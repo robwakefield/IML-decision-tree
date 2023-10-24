@@ -2,14 +2,16 @@
 
 import numpy as np
 
-clean_data = np.loadtxt("wifi_db/clean_dataset.txt")
-print("clean")
-print(clean_data)
+# TODO: Define class Leaf and Tree
 
-noisy_data = np.loadtxt("wifi_db/noisy_dataset.txt")
-print("noisy")
-print(noisy_data)
+def find_split(dataset):
+    # Chooses the attribute and the value that results in the highest information gain
+    # (Defined in spec)
+    return
 
+def split_dataset(split, dataset):
+    # Splits the dataset into 2 based on `split`
+    return
 
 def decision_tree_learning(training_dataset, depth):
     # Check if all samples have the same label
@@ -23,3 +25,12 @@ def decision_tree_learning(training_dataset, depth):
         l_branch, l_depth = decision_tree_learning(l_dataset, depth+1)
         r_branch, r_depth = decision_tree_learning(r_dataset, depth+1)
         return (node, max(l_depth, r_depth))
+
+if __name__ == "__main__":
+    clean_data = np.loadtxt("wifi_db/clean_dataset.txt")
+    print("clean")
+    print(clean_data)
+
+    noisy_data = np.loadtxt("wifi_db/noisy_dataset.txt")
+    print("noisy")
+    print(noisy_data)
