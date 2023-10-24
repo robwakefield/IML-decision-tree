@@ -8,18 +8,18 @@ import numpy as np
 # Tree Node: (A Leaf Node just has a value. 'attribute', 'left' and 'right' are None)
 #   { 'attribute', 'value', 'left', 'right' }
 
+# Readable function to return the label of a sample
 def get_label(sample):
-    # Readable function to return the label of a sample
-    return sample[7]
+    return sample[-1]
 
+# Chooses the attribute and the value that results in the highest information gain
+# (Defined in spec)
 def find_split(dataset):
-    # Chooses the attribute and the value that results in the highest information gain
-    # (Defined in spec)
     # TODO: implement
     return (attr, value)
 
+# Splits the dataset into 2 based on 'split_attr' and 'split_val'
 def split_dataset(dataset, split_attr, split_val):
-    # Splits the dataset into 2 based on 'split_attr' and 'split_val'
     # TODO: implement
     return (l_dataset, r_dataset)
 
