@@ -2,6 +2,9 @@
 
 import numpy as np
 import math
+import random
+
+no_of_rooms = -1
 
 # Dataset: 2000x8 array
 #  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label]x2000
@@ -101,6 +104,32 @@ def decision_tree_learning(training_dataset, depth):
                 }
     
         return (node, max(l_depth, r_depth))
+    
+def evaluate_data(test_data, tree):
+    if tree['attribute'] == None:
+        return (test_data[-1], tree['value'])
+    if test_data[tree['attribute']] > tree['value']:
+        return evaluate_data(test_data, tree['right'])
+    else:
+        return evaluate_data(test_data, tree['left'])
+
+def evaluate(test_dataset, tree):
+    confusion_mat = np.zeros((no_of_rooms, no_of_rooms))
+    sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
+    for test in test_dataset:
+        # actual, predict = evaluate_data(test, tree)
+        confusion_mat[evaluate_data(test, tree)] += 1
+    print(confusion_mat)
+    return confusion_mat
+
+
+# TODO: split dataset into 10 folds
+# def split_dataset(dataset, test_proportion, random_generator = random.default_rng()):
+#     random_generator.shuffle(dataset, axis=0)
+#     test_size = int(dataset.shape[0] * test_proportion)
+#     train_size = dataset.shape[0] - test_size
+#     return (data[:train_size, :-1], data[:test_size, :-1], data[:train_size, -1], data[:test_size, -1])
+
 
 if __name__ == "__main__":
     clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
@@ -115,6 +144,7 @@ if __name__ == "__main__":
     # print("Data", small_dataset)
     # find_split(small_dataset)
     
+    no_of_rooms = np.unique(clean_dataset[:, -1])
     tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
     print("depth:", depth)
