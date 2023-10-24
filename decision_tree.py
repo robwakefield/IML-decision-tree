@@ -12,6 +12,10 @@ import numpy as np
 def get_label(sample):
     return sample[-1]
 
+# Checks if Tree Node is a Leaf Node
+def is_leaf_node(node):
+    return node['left'] == node['right'] == None
+
 # Chooses the attribute and the value that results in the highest information gain
 # (Defined in spec)
 def find_split(dataset):
@@ -47,8 +51,8 @@ def decision_tree_learning(training_dataset, depth):
         node = {
                 'attribute' : split_attr, # e.g. X0, X4
                 'value' : split_val, # e.g. -55.5, -70.5
-                'left': l_branch,
-                'right': r_branch
+                'left' : l_branch,
+                'right' : r_branch
                 }
     
         return (node, max(l_depth, r_depth))
@@ -61,3 +65,4 @@ if __name__ == "__main__":
     noisy_data = np.loadtxt("wifi_db/noisy_dataset.txt")
     print("noisy")
     print(noisy_data)
+
