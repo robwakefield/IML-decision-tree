@@ -2,8 +2,15 @@
 
 import numpy as np
 
+# Dataset: 2000x8 array
+#  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label]x2000
+
 # Tree Node: (A Leaf Node just has a value. 'attribute', 'left' and 'right' are None)
 #   { 'attribute', 'value', 'left', 'right' }
+
+def get_label(sample):
+    # Readable function to return the label of a sample
+    return sample[7]
 
 def find_split(dataset):
     # Chooses the attribute and the value that results in the highest information gain
@@ -19,11 +26,11 @@ def split_dataset(dataset, split_attr, split_val):
 def decision_tree_learning(training_dataset, depth):
     # Check if all samples have the same label
     # TODO: Can len(training_dataset) == 0 ever?
-    if len(training_dataset) == 0 or all(s.label == training_dataset[0].label for s in training_dataset):
+    if all(get_label(s) == get_label(training_dataset[0]) for s in training_dataset):
         # Construct Leaf Node
         return ({
                 'attribute' : None,
-                'value': training_dataset[0].value,
+                'value': get_label(training_dataset[0]),
                 'left' : None,
                 'right' : None
                 }, depth)
