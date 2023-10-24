@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import random
 
 # Dataset: 2000x8 array
 #  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label]x2000
@@ -16,12 +17,13 @@ def get_label(sample):
 def is_leaf_node(node):
     return node['left'] == node['right'] == None
 
-# Chooses the attribute and the value that results in the highest information gain
 # (Defined in spec)
+# Chooses the attribute and the value that results in the highest information gain
+# attr: an int from 0-6 specifying which attribute from sample to split on. value: a float
 def find_split(dataset):
-    # TODO: implement
-    # attr is an int from 0-6 specifying which attribute from sample to split on
-    # value is a float
+    # TODO: implement (it currently chooses a random attr and value)
+    attr = random.randint(0, 6) # TODO: delete this line
+    value = random.randint(-100, 0) # TODO: delete this line
     return (attr, value)
 
 # Splits the dataset into 2 based on 'split_attr' and 'split_val'
@@ -33,8 +35,16 @@ def split_dataset(dataset, attr, value):
     return (l_dataset, r_dataset)
 
 def decision_tree_learning(training_dataset, depth):
+    # TODO: Can len(training_dataset) ever be 0?
+    if len(training_dataset) == 0:
+        return ({
+                'attribute' : None,
+                'value': 0,
+                'left' : None,
+                'right' : None
+                }, depth)
+
     # Check if all samples have the same label
-    # TODO: Can len(training_dataset) == 0 ever?
     if all(get_label(s) == get_label(training_dataset[0]) for s in training_dataset):
         # Construct Leaf Node
         return ({
