@@ -58,11 +58,14 @@ def decision_tree_learning(training_dataset, depth):
         return (node, max(l_depth, r_depth))
 
 if __name__ == "__main__":
-    clean_data = np.loadtxt("wifi_db/clean_dataset.txt")
-    print("clean")
-    print(clean_data)
+    clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
+    print("clean dataset")
+    print(clean_dataset)
 
-    noisy_data = np.loadtxt("wifi_db/noisy_dataset.txt")
-    print("noisy")
-    print(noisy_data)
+    noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
+    print("noisy dataset")
+    print(noisy_dataset)
+    
+    tree, _ = decision_tree_learning(clean_dataset, 0)
+    print(tree)
 
