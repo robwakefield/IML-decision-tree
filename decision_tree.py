@@ -4,6 +4,8 @@ import numpy as np
 import math
 import random
 
+from visualisation import plot_decision_tree
+
 # Dataset: 2000x8 array
 #  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label ]x2000
 
@@ -130,7 +132,8 @@ def evaluate(test_dataset, tree):
 def cal_accuracy(confusion_matrix):
     T = np.sum(np.diag(confusion_matrix))
     total = np.sum(confusion_matrix)
-    return T / total
+    assert(total > 0)
+    return T + 1 / total + 1
     
     
     
@@ -148,7 +151,7 @@ def test_tree_for_pruning(validation_set, tree, depth):
         
     left_validation_set, right_validation_set = split_dataset(validation_set, tree['attribute'], tree['value'])
     new_left_tree, left_confusion_matrix, left_depth = test_tree_for_pruning(left_validation_set, tree['left'], depth + 1)
-    new_right_tree, right_confusion_matrix, right_depth = test_tree_for_pruning(right_validation_set, tree['left'], depth + 1)    
+    new_right_tree, right_confusion_matrix, right_depth = test_tree_for_pruning(right_validation_set, tree['right'], depth + 1)    
 
     new_tree = {
     	'attribute' : tree['attribute'],
@@ -177,14 +180,16 @@ def test_tree_for_pruning(validation_set, tree, depth):
     pruned_confusion_matrix = evaluate(validation_set, pruned_current_tree)
     pruned_accuracy = cal_accuracy(pruned_confusion_matrix)
 
-    if (original_accuracy > pruned_accuracy):
+    if (original_accuracy >= pruned_accuracy):
         # Don't prune
 	    assert (left_depth == right_depth)
-	    return (new_tree, merged_confusion_matrix, depth)
+	    return (new_tree, merged_confusion_matrix, max(left_depth, right_depth))
     else:
-	    # Prune
-	    new_depth = depth - 1
-	    return (pruned_current_tree, pruned_confusion_matrix, new_depth)
+        # Prune
+        print('PRUNED')
+        new_depth = depth - 1
+        print(pruned_current_tree, pruned_confusion_matrix, new_depth)
+        return (pruned_current_tree, pruned_confusion_matrix, new_depth)
     	
 
 # TODO: split dataset into 10 folds
@@ -197,12 +202,12 @@ def test_tree_for_pruning(validation_set, tree, depth):
 
 if __name__ == "__main__":
     clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
-    print("clean dataset")
-    print(clean_dataset)
+    # print("clean dataset")
+    # print(clean_dataset)
 
     noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
-    print("noisy dataset")
-    print(noisy_dataset)
+    # print("noisy dataset")
+    # print(noisy_dataset)
 
     # small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
     # print("Data", small_dataset)
@@ -210,11 +215,12 @@ if __name__ == "__main__":
     
     labels = np.unique(clean_dataset[:, -1])
     tree, depth = decision_tree_learning(clean_dataset, 0)
-    print(tree)
+    plot_decision_tree(tree, depth, "clean_tree")
     print("depth:", depth)
 
-    pruned, _, p_depth = prune_tree(clean_dataset, tree)
-    print("depth:", p_depth)
+    pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
+    plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
+    print("depth:", pruned_depth)
     # # Testing
     # print(cal_entropy(small_dataset))
 
