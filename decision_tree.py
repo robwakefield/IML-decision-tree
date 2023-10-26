@@ -4,13 +4,13 @@ import numpy as np
 import math
 import random
 
-no_of_rooms = -1
-
 # Dataset: 2000x8 array
-#  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label]x2000
+#  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label ]x2000
 
 # Tree Node: (A Leaf Node just has a value. 'attribute', 'left' and 'right' are None)
 #   { 'attribute', 'value', 'left', 'right' }
+
+no_of_rooms = -1
 
 # Readable function to return the label of a sample
 def get_label(sample):
@@ -20,11 +20,8 @@ def get_label(sample):
 def is_leaf_node(node):
     return node['left'] == node['right'] == None
 
-# (Defined in spec)
 # Chooses the attribute and the value that results in the highest information gain
-# attr: an int from 0-6 specifying which attribute from sample to split on. value: a float
 def find_split(dataset):
-
     # Store all information gain of different attributes and values
     info_gain = {}
 
@@ -68,11 +65,10 @@ def split_dataset(dataset, attr, value):
     return (l_dataset, r_dataset)
 
 def decision_tree_learning(training_dataset, depth):
-    # TODO: Can len(training_dataset) ever be 0?
     if len(training_dataset) == 0:
         return ({
                 'attribute' : None,
-                'value': 0,
+                'value': -1,
                 'left' : None,
                 'right' : None
                 }, depth)
@@ -106,8 +102,8 @@ def decision_tree_learning(training_dataset, depth):
         return (node, max(l_depth, r_depth))
     
 def evaluate_data(test_data, tree):
-    if tree['attribute'] == None:
-        return (test_data[-1], tree['value'])
+    if is_leaf_node(tree):
+        return (get_label(test_data), tree['value'])
     if test_data[tree['attribute']] > tree['value']:
         return evaluate_data(test_data, tree['right'])
     else:
