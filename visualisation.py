@@ -51,7 +51,11 @@ def plot_decision_tree(tree, depth, fname):
 
 def plot_subtree(tree, min_width, max_depth, x, current_depth, ax):
     font_size = 6
-    if (current_depth > max_depth):
+    if current_depth < 3 :
+        font_size = 10
+    elif current_depth < 6 :
+        font_size = 8
+    if current_depth > max_depth:
         return
 
     if is_leaf_node(tree):
