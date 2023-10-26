@@ -196,9 +196,24 @@ def split_folds_dataset(dataset, fold_no):
     folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
     fold_list = []
     for i, f in enumerate(folds):
-        training_list = [j for s in folds[:i] + folds[i+1:] for j in s]
-        fold_list.append((f, training_list))
-        
+        training_list = np.array([j for s in folds[:i] + folds[i+1:] for j in s])
+        fold_list.append((np.array(f), training_list))
+        print(f"test set", f, "\ntraining set\n", training_list)
+    return fold_list
+
+def cross_validation(dataset, fold_no, depth):
+    fold_list = split_folds_dataset(dataset, fold_no)
+    confusion_matrix_list = []
+    accuracy_list =[]
+    for i, (test_dataset, training_dataset) in enumerate(fold_list):
+        (tree, tree_depth) = decision_tree_learning(training_dataset, depth)
+        # print(tree, tree_depth)
+        confusion_matrix = evaluate(test_dataset, tree)
+        accuracy = cal_accuracy(confusion_matrix)
+        confusion_matrix_list.append(confusion_matrix)
+        accuracy_list.append(accuracy)
+        print(f"Confusion Matrix of Fold {i}:", confusion_matrix, f"Accuracy:", accuracy)
+    return (confusion_matrix_list, accuracy_list)
 
 if __name__ == "__main__":
     clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
