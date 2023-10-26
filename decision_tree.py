@@ -190,13 +190,15 @@ def test_tree_for_pruning(validation_set, tree, depth):
         return (pruned_current_tree, pruned_confusion_matrix, new_depth)
     	
 
-# TODO: split dataset into 10 folds
-# def split_dataset(dataset, test_proportion, random_generator = random.default_rng()):
-#     random_generator.shuffle(dataset, axis=0)
-#     test_size = int(dataset.shape[0] * test_proportion)
-#     train_size = dataset.shape[0] - test_size
-#     return (data[:train_size, :-1], data[:test_size, :-1], data[:train_size, -1], data[:test_size, -1])
-
+# split dataset into folds, array of (testing_set, training_set)
+def split_folds_dataset(dataset, fold_no):
+    np.random.default_rng().shuffle(dataset)
+    folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
+    fold_list = []
+    for i, f in enumerate(folds):
+        training_list = [j for s in folds[:i] + folds[i+1:] for j in s]
+        fold_list.append((f, training_list))
+        
 
 if __name__ == "__main__":
     clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
