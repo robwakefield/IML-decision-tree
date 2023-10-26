@@ -121,16 +121,14 @@ def evaluate(test_dataset, tree):
     return confusion_mat
 
 
-# TODO: split dataset into 10 folds
+# split dataset into folds, array of (testing_set, training_set)
 def split_folds_dataset(dataset, fold_no):
     np.random.default_rng().shuffle(dataset)
     folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
     fold_list = []
     for i, f in enumerate(folds):
-        training_list = folds[:i] + folds[i+1:]
-        fold_list.append(f, training_list)
-        print(f"fold {i}:", f, f"training {i}:", training_list)
-    print(f"list", fold_list)
+        training_list = [j for s in folds[:i] + folds[i+1:] for j in s]
+        fold_list.append((f, training_list))
         
 
 if __name__ == "__main__":
