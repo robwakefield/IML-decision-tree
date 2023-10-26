@@ -13,8 +13,10 @@ def is_leaf_node(node):
 def plot_decision_tree(tree, depth, fname):
     fig, ax = plt.subplots()
 
+    width = 100
+
     ax.set_ylim(depth, 0)
-    ax.set_xlim(-3 * depth, 3 * depth)
+    ax.set_xlim(-width, width)
 
     # Move left y-axis and bottom x-axis to centre, passing through (0,0)
     ax.spines['left'].set_position('zero')
@@ -45,8 +47,12 @@ def plot_subtree(tree, x, depth, ax):
                 bbox = dict(facecolor='wheat', alpha=1, boxstyle='round'),
                 ha='center', va='center')
         # Plot 2 lines L and R
-        plot_subtree(tree['left'], x-30/(depth+1),  depth + 1, ax)
-        plot_subtree(tree['right'], x+30/(depth+1), depth + 1, ax)
+        l = x-(30/(depth+1)) - 4
+        r = x+(30/(depth+1)) + 4
+        plt.plot(np.array([x, l]), np.array([depth, depth+1]))
+        plt.plot(np.array([x, r]), np.array([depth, depth+1]))
+        plot_subtree(tree['left'], l,  depth + 1, ax)
+        plot_subtree(tree['right'], r, depth + 1, ax)
 
 
     return
