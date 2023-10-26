@@ -19,12 +19,11 @@ def get_label_color(label):
     return color_list[int(label)]
 
 def plot_decision_tree(tree, depth, fname):
-    fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(50, 10))
+    ax = plt.subplot(1, 1, 1)
 
     min_width = 5
     width = min_width * pow(2, depth)
-
-    plt.figure(figsize=(50, 10))
 
     ax.set_ylim(depth, 0)
     ax.set_xlim(-width/2, width/2)
@@ -39,6 +38,12 @@ def plot_decision_tree(tree, depth, fname):
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
 
+    # Remove ticks and tick labels
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
+    ax.set_xticks([])
+    ax.set_yticks([])
+
     plot_subtree(tree, min_width, depth, 0, 0, ax)
 
     #plt.show()
@@ -46,6 +51,9 @@ def plot_decision_tree(tree, depth, fname):
 
 def plot_subtree(tree, min_width, max_depth, x, current_depth, ax):
     font_size = 6
+    if (current_depth > max_depth):
+        return
+
     if is_leaf_node(tree):
         # Plot a Leaf Label
         plt.text(x, current_depth, "Label: " + str(tree['value']),
