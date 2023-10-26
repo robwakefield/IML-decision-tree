@@ -10,7 +10,15 @@ import random
 # Tree Node: (A Leaf Node just has a value. 'attribute', 'left' and 'right' are None)
 #   { 'attribute', 'value', 'left', 'right' }
 
-no_of_rooms = -1
+labels = []
+no_of_labels = -1
+
+def label_to_index(label):
+    return np.where(labels == label)[0]
+
+def no_of_labels():
+    return len(labels)
+
 
 # Readable function to return the label of a sample
 def get_label(sample):
@@ -110,17 +118,19 @@ def evaluate_data(test_data, tree):
         return evaluate_data(test_data, tree['left'])
 
 def evaluate(test_dataset, tree):
-    confusion_mat = np.zeros((no_of_rooms, no_of_rooms))
+    confusion_mat = np.zeros((no_of_labels(), no_of_labels()))
     sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
     for test in test_dataset:
         # actual, predict = evaluate_data(test, tree)
         a, b = evaluate_data(test, tree)
-        confusion_mat[int(a), int(b)] += 1
-    print(confusion_mat)
+        confusion_mat[label_to_index(a), label_to_index(b)] += 1
+    # print(confusion_mat)
     return confusion_mat
     
 def cal_accuracy(confusion_matrix):
-    return 0
+    T = np.sum(np.diag(confusion_matrix))
+    total = np.sum(confusion_matrix)
+    return T / total
     
     
     
@@ -129,7 +139,7 @@ def prune_tree(validation_set, tree):
     
 def test_tree_for_pruning(validation_set, tree, depth):
     if (len(validation_set[:-1]) == 0):
-    	return (tree, None, depth)
+    	return (tree, np.zeros((no_of_labels(), no_of_labels())), depth)
         
     if (is_leaf_node(tree)):
     	# Get confusion matrix on the leaf node
@@ -147,14 +157,13 @@ def test_tree_for_pruning(validation_set, tree, depth):
     	'right' : new_right_tree
     }
 
-    if (not is_leaf_node(tree['left']) or not is_leaf_node(tree['right'])):
+    if ((not is_leaf_node(tree['left'])) or (not is_leaf_node(tree['right']))):
     	return (new_tree, None, max(left_depth, right_depth))
     	
     # Compare accuracy for prune and non-prune tree
 
     # Find original accuracy
     merged_confusion_matrix = left_confusion_matrix + right_confusion_matrix
-
     original_accuracy = cal_accuracy(merged_confusion_matrix)
  
     # Find pruned accuracy 
@@ -171,7 +180,7 @@ def test_tree_for_pruning(validation_set, tree, depth):
     if (original_accuracy > pruned_accuracy):
         # Don't prune
 	    assert (left_depth == right_depth)
-	    return (new_tree, merged_confusion_matrix, depth);
+	    return (new_tree, merged_confusion_matrix, depth)
     else:
 	    # Prune
 	    new_depth = depth - 1
@@ -199,13 +208,12 @@ if __name__ == "__main__":
     # print("Data", small_dataset)
     # find_split(small_dataset)
     
-    no_of_rooms = len(clean_dataset[:, -1])
+    labels = np.unique(clean_dataset[:, -1])
     tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
     print("depth:", depth)
 
-    pruned, _, p_depth = prune_tree(noisy_dataset, tree)
-    print(pruned)
+    pruned, _, p_depth = prune_tree(clean_dataset, tree)
     print("depth:", p_depth)
     # # Testing
     # print(cal_entropy(small_dataset))
