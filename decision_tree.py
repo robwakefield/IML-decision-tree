@@ -133,15 +133,13 @@ def cal_accuracy(confusion_matrix):
     T = np.sum(np.diag(confusion_matrix))
     total = np.sum(confusion_matrix)
     assert(total > 0)
-    return T + 1 / total + 1
-    
-    
+    return T / total
     
 def prune_tree(validation_set, tree):
     return test_tree_for_pruning(validation_set, tree, 0)
     
 def test_tree_for_pruning(validation_set, tree, depth):
-    if (len(validation_set[:-1]) == 0):
+    if (validation_set.shape[0] == 0):
     	return (tree, np.zeros((no_of_labels(), no_of_labels())), depth)
         
     if (is_leaf_node(tree)):
@@ -214,6 +212,7 @@ if __name__ == "__main__":
     # find_split(small_dataset)
     
     labels = np.unique(clean_dataset[:, -1])
+    
     tree, depth = decision_tree_learning(clean_dataset, 0)
     plot_decision_tree(tree, depth, "clean_tree")
     print("depth:", depth)
@@ -221,6 +220,7 @@ if __name__ == "__main__":
     pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
     plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
     print("depth:", pruned_depth)
+
     # # Testing
     # print(cal_entropy(small_dataset))
 
