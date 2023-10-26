@@ -24,6 +24,8 @@ def plot_decision_tree(tree, depth, fname):
     min_width = 5
     width = min_width * pow(2, depth)
 
+    plt.figure(figsize=(50, 10))
+
     ax.set_ylim(depth, 0)
     ax.set_xlim(-width/2, width/2)
 
@@ -39,20 +41,20 @@ def plot_decision_tree(tree, depth, fname):
 
     plot_subtree(tree, min_width, depth, 0, 0, ax)
 
-    plt.show()
-    #plt.savefig(output_path + fname + ".png")
+    #plt.show()
+    plt.savefig(output_path + fname + ".png")
 
 def plot_subtree(tree, min_width, max_depth, x, current_depth, ax):
     font_size = 6
     if is_leaf_node(tree):
         # Plot a Leaf Label
-        ax.text(x, current_depth, "Label: " + str(tree['value']),
+        plt.text(x, current_depth, "Label: " + str(tree['value']),
                 fontsize=font_size,
                 bbox = dict(facecolor=get_label_color(tree['value']), alpha=1, boxstyle='round'),
                 ha='center', va='center')
     else:
         # Plot a Node Label
-        ax.text(x, current_depth, "X" + str(tree['attribute']) + " > " + str(tree['value']),
+        plt.text(x, current_depth, "X" + str(tree['attribute']) + " > " + str(tree['value']),
                 fontsize=font_size,
                 bbox = dict(facecolor=get_attr_color(tree['attribute']), alpha=1, boxstyle='round'),
                 ha='center', va='center')
