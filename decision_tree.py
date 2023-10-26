@@ -4,6 +4,8 @@ import numpy as np
 import math
 import random
 
+from visualisation import plot_decision_tree
+
 # Dataset: 2000x8 array
 #  [ sig_1, sig_2, sig_3, sig_4, sig_5, sig_6, sig_7, label ]x2000
 
@@ -144,6 +146,8 @@ if __name__ == "__main__":
     tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
     print("depth:", depth)
+
+    plot_decision_tree(tree, depth, "clean_tree")
 
     # # Testing
     # print(cal_entropy(small_dataset))
