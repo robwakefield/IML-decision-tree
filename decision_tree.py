@@ -12,7 +12,15 @@ from visualisation import plot_decision_tree
 # Tree Node: (A Leaf Node just has a value. 'attribute', 'left' and 'right' are None)
 #   { 'attribute', 'value', 'left', 'right' }
 
-no_of_rooms = -1
+labels = []
+no_of_labels = -1
+
+def label_to_index(label):
+    return np.where(labels == label)[0]
+
+def no_of_labels():
+    return len(labels)
+
 
 # Readable function to return the label of a sample
 def get_label(sample):
@@ -112,14 +120,75 @@ def evaluate_data(test_data, tree):
         return evaluate_data(test_data, tree['left'])
 
 def evaluate(test_dataset, tree):
-    confusion_mat = np.zeros((no_of_rooms, no_of_rooms))
+    confusion_mat = np.zeros((no_of_labels(), no_of_labels()))
     sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
     for test in test_dataset:
         # actual, predict = evaluate_data(test, tree)
-        confusion_mat[evaluate_data(test, tree)] += 1
-    print(confusion_mat)
+        a, b = evaluate_data(test, tree)
+        confusion_mat[label_to_index(a), label_to_index(b)] += 1
+    # print(confusion_mat)
     return confusion_mat
+    
+def cal_accuracy(confusion_matrix):
+    T = np.sum(np.diag(confusion_matrix))
+    total = np.sum(confusion_matrix)
+    assert(total > 0)
+    return T / total
+    
+def prune_tree(validation_set, tree):
+    return test_tree_for_pruning(validation_set, tree, 0)
+    
+def test_tree_for_pruning(validation_set, tree, depth):
+    if (validation_set.shape[0] == 0):
+    	return (tree, np.zeros((no_of_labels(), no_of_labels())), depth)
+        
+    if (is_leaf_node(tree)):
+    	# Get confusion matrix on the leaf node
+    	confusion_matrix = evaluate(validation_set, tree)
+    	return (tree, confusion_matrix, depth)
+        
+    left_validation_set, right_validation_set = split_dataset(validation_set, tree['attribute'], tree['value'])
+    new_left_tree, left_confusion_matrix, left_depth = test_tree_for_pruning(left_validation_set, tree['left'], depth + 1)
+    new_right_tree, right_confusion_matrix, right_depth = test_tree_for_pruning(right_validation_set, tree['right'], depth + 1)    
 
+    new_tree = {
+    	'attribute' : tree['attribute'],
+    	'value': tree['value'],
+    	'left' : new_left_tree,
+    	'right' : new_right_tree
+    }
+
+    if ((not is_leaf_node(tree['left'])) or (not is_leaf_node(tree['right']))):
+    	return (new_tree, None, max(left_depth, right_depth))
+    	
+    # Compare accuracy for prune and non-prune tree
+
+    # Find original accuracy
+    merged_confusion_matrix = left_confusion_matrix + right_confusion_matrix
+    original_accuracy = cal_accuracy(merged_confusion_matrix)
+ 
+    # Find pruned accuracy 
+    majority_label = np.bincount(validation_set[:, -1].astype(int)).argmax()
+    pruned_current_tree = {
+			'attribute' : None,
+			'value': majority_label,
+			'left' : None,
+			'right' : None
+			}
+    pruned_confusion_matrix = evaluate(validation_set, pruned_current_tree)
+    pruned_accuracy = cal_accuracy(pruned_confusion_matrix)
+
+    if (original_accuracy >= pruned_accuracy):
+        # Don't prune
+	    assert (left_depth == right_depth)
+	    return (new_tree, merged_confusion_matrix, max(left_depth, right_depth))
+    else:
+        # Prune
+        print('PRUNED')
+        new_depth = depth - 1
+        print(pruned_current_tree, pruned_confusion_matrix, new_depth)
+        return (pruned_current_tree, pruned_confusion_matrix, new_depth)
+    	
 
 # split dataset into folds, array of (testing_set, training_set)
 def split_folds_dataset(dataset, fold_no):
@@ -132,25 +201,27 @@ def split_folds_dataset(dataset, fold_no):
         
 
 if __name__ == "__main__":
-    # clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
+    clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
     # print("clean dataset")
     # print(clean_dataset)
 
-    # noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
+    noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
     # print("noisy dataset")
     # print(noisy_dataset)
 
-    small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
-    print("Data", small_dataset)
-    split_folds_dataset(small_dataset, 5)
+    # small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
+    # print("Data", small_dataset)
     # find_split(small_dataset)
     
-    # no_of_rooms = np.unique(clean_dataset[:, -1])
-    # tree, depth = decision_tree_learning(clean_dataset, 0)
-    # print(tree)
-    # print("depth:", depth)
+    labels = np.unique(clean_dataset[:, -1])
+    
+    tree, depth = decision_tree_learning(clean_dataset, 0)
+    plot_decision_tree(tree, depth, "clean_tree")
+    print("depth:", depth)
 
-    # plot_decision_tree(tree, depth, "clean_tree")
+    pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
+    plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
+    print("depth:", pruned_depth)
 
     # # Testing
     # print(cal_entropy(small_dataset))
