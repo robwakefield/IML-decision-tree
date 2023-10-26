@@ -122,32 +122,37 @@ def evaluate(test_dataset, tree):
 
 
 # TODO: split dataset into 10 folds
-# def split_dataset(dataset, test_proportion, random_generator = random.default_rng()):
-#     random_generator.shuffle(dataset, axis=0)
-#     test_size = int(dataset.shape[0] * test_proportion)
-#     train_size = dataset.shape[0] - test_size
-#     return (data[:train_size, :-1], data[:test_size, :-1], data[:train_size, -1], data[:test_size, -1])
-
+def split_folds_dataset(dataset, fold_no):
+    np.random.default_rng().shuffle(dataset)
+    folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
+    fold_list = []
+    for i, f in enumerate(folds):
+        training_list = folds[:i] + folds[i+1:]
+        fold_list.append(f, training_list)
+        print(f"fold {i}:", f, f"training {i}:", training_list)
+    print(f"list", fold_list)
+        
 
 if __name__ == "__main__":
-    clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
-    print("clean dataset")
-    print(clean_dataset)
+    # clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
+    # print("clean dataset")
+    # print(clean_dataset)
 
-    noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
-    print("noisy dataset")
-    print(noisy_dataset)
+    # noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
+    # print("noisy dataset")
+    # print(noisy_dataset)
 
-    # small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
-    # print("Data", small_dataset)
+    small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
+    print("Data", small_dataset)
+    split_folds_dataset(small_dataset, 5)
     # find_split(small_dataset)
     
-    no_of_rooms = np.unique(clean_dataset[:, -1])
-    tree, depth = decision_tree_learning(clean_dataset, 0)
-    print(tree)
-    print("depth:", depth)
+    # no_of_rooms = np.unique(clean_dataset[:, -1])
+    # tree, depth = decision_tree_learning(clean_dataset, 0)
+    # print(tree)
+    # print("depth:", depth)
 
-    plot_decision_tree(tree, depth, "clean_tree")
+    # plot_decision_tree(tree, depth, "clean_tree")
 
     # # Testing
     # print(cal_entropy(small_dataset))
