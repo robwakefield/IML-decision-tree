@@ -184,9 +184,9 @@ def test_tree_for_pruning(validation_set, tree, depth):
 	    return (new_tree, merged_confusion_matrix, max(left_depth, right_depth))
     else:
         # Prune
-        # print('PRUNED')
+        print('PRUNED')
         new_depth = depth - 1
-        # print(pruned_current_tree, pruned_confusion_matrix, new_depth)
+        print(pruned_current_tree, pruned_confusion_matrix, new_depth)
         return (pruned_current_tree, pruned_confusion_matrix, new_depth)
     	
 
