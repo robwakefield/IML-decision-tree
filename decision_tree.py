@@ -114,7 +114,8 @@ def evaluate(test_dataset, tree):
     sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
     for test in test_dataset:
         # actual, predict = evaluate_data(test, tree)
-        confusion_mat[evaluate_data(test, tree)] += 1
+        a, b = evaluate_data(test, tree)
+        confusion_mat[int(a), int(b)] += 1
     print(confusion_mat)
     return confusion_mat
     
@@ -127,24 +128,28 @@ def prune_tree(validation_set, tree):
     return test_tree_for_pruning(validation_set, tree, 0)
     
 def test_tree_for_pruning(validation_set, tree, depth):
+    if (len(validation_set[:-1]) == 0):
+    	return (tree, None, depth)
+        
     if (is_leaf_node(tree)):
     	# Get confusion matrix on the leaf node
     	confusion_matrix = evaluate(validation_set, tree)
     	return (tree, confusion_matrix, depth)
-    	
-    left_validation_set, right_validation_set = split_dataset(validation_set, tree.attribute, tree.value)
-    new_left_tree, left_confusion_matrix, left_depth = test_tree_for_pruning(left_validation_set, tree.left, depth + 1);
-    new_right_tree, right_confusion_matrix, right_depth = test_tree_for_pruning(right_validation_set, tree.left, depth + 1);
-    
-    if (!is_leaf_node(tree.left) || !is_leaf_node(tree.right)):
-    	return (new_tree, null, max(left_depth, right_depth))
-    	
+        
+    left_validation_set, right_validation_set = split_dataset(validation_set, tree['attribute'], tree['value'])
+    new_left_tree, left_confusion_matrix, left_depth = test_tree_for_pruning(left_validation_set, tree['left'], depth + 1)
+    new_right_tree, right_confusion_matrix, right_depth = test_tree_for_pruning(right_validation_set, tree['left'], depth + 1)    
+
     new_tree = {
-		'attribute' : tree.attribute,
-		'value': tree.value,
-		'left' : left_pruned_tree,
-		'right' : right_pruned_tree
-		}
+    	'attribute' : tree['attribute'],
+    	'value': tree['value'],
+    	'left' : new_left_tree,
+    	'right' : new_right_tree
+    }
+
+    if (not is_leaf_node(tree['left']) or not is_leaf_node(tree['right'])):
+    	return (new_tree, None, max(left_depth, right_depth))
+    	
     # Compare accuracy for prune and non-prune tree
 
     # Find original accuracy
@@ -153,7 +158,7 @@ def test_tree_for_pruning(validation_set, tree, depth):
     original_accuracy = cal_accuracy(merged_confusion_matrix)
  
     # Find pruned accuracy 
-    majority_label = np.bincount(validation_set[:, -1]).argmax()
+    majority_label = np.bincount(validation_set[:, -1].astype(int)).argmax()
     pruned_current_tree = {
 			'attribute' : None,
 			'value': majority_label,
@@ -165,12 +170,12 @@ def test_tree_for_pruning(validation_set, tree, depth):
 
     if (original_accuracy > pruned_accuracy):
         # Don't prune
-	assert (left_depth == right_depth)
-	return (new_tree, merged_confusion_matrix, depth);
+	    assert (left_depth == right_depth)
+	    return (new_tree, merged_confusion_matrix, depth);
     else:
-	# Prune
-	new_depth = depth - 1
-	return (pruned_current_tree, pruned_confusion_matrix, new_depth)
+	    # Prune
+	    new_depth = depth - 1
+	    return (pruned_current_tree, pruned_confusion_matrix, new_depth)
     	
 
 # TODO: split dataset into 10 folds
@@ -194,11 +199,14 @@ if __name__ == "__main__":
     # print("Data", small_dataset)
     # find_split(small_dataset)
     
-    no_of_rooms = np.unique(clean_dataset[:, -1])
+    no_of_rooms = len(clean_dataset[:, -1])
     tree, depth = decision_tree_learning(clean_dataset, 0)
     print(tree)
     print("depth:", depth)
 
+    pruned, _, p_depth = prune_tree(noisy_dataset, tree)
+    print(pruned)
+    print("depth:", p_depth)
     # # Testing
     # print(cal_entropy(small_dataset))
 
