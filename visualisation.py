@@ -76,9 +76,9 @@ def plot_decision_tree(tree, depth, fname, depth_based=True):
 def plot_subtree(tree, depth_tree, min_width, offset, x, depth, ax, depth_based):
     font_size = 5
     if depth < 3 :
-        font_size = 10
-    if depth < 10 :
-        font_size = 6
+        font_size = 12
+    elif depth < 10:
+        font_size = 8
 
     if is_leaf_node(tree):
         # Plot a Leaf Label
@@ -107,8 +107,8 @@ def plot_subtree(tree, depth_tree, min_width, offset, x, depth, ax, depth_based)
             r = x + 0.5 * offset
             ratio = 0.5
 
-        plt.plot(np.array([x, l]), np.array([depth, depth + 1]), 'b')
-        plt.plot(np.array([x, r]), np.array([depth, depth + 1]), 'r')
+        plt.plot(np.array([x, l]), np.array([depth, depth + 1]), 'b', linewidth=3)
+        plt.plot(np.array([x, r]), np.array([depth, depth + 1]), 'r', linewidth=3)
         # Recursively plot subtrees
         plot_subtree(tree['left'], depth_tree['left'], min_width, ratio * offset, l,  depth + 1, ax, depth_based)
         plot_subtree(tree['right'], depth_tree['right'], min_width, (1 - ratio) * offset, r, depth + 1, ax, depth_based)
