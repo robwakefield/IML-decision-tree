@@ -30,7 +30,7 @@ def plot_decision_tree(tree, depth, fname):
 
     plot_subtree(tree, 0, 0, ax)
 
-    plt.show()
+    #plt.show()
     plt.savefig(output_path + fname + ".png")
 
 def get_attr_color(attr):
@@ -61,9 +61,6 @@ def plot_subtree(tree, x, depth, ax):
         plt.plot(np.array([x, r]), np.array([depth, depth+1]), 'r')
         plot_subtree(tree['left'], l,  depth + 1, ax)
         plot_subtree(tree['right'], r, depth + 1, ax)
-
-
-    return
 
 if __name__ == "__main__":
     tree = {}
