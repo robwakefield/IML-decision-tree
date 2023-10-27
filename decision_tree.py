@@ -229,41 +229,47 @@ def cross_validation(dataset, fold_no):
     return (tree_list, depth_list, confusion_matrix_list, accuracy_list, best_fold)
 
 if __name__ == "__main__":
-    clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
-    # print("clean dataset")
-    # print(clean_dataset)
 
-    noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
-    # print("noisy dataset")
-    # print(noisy_dataset)
-
-    small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
-    # print("Data", small_dataset)
-    # find_split(small_dataset)
-
-    # Run input dataset if exists
+    # Run input dataset if specified
     if len(sys.argv) > 1:
         input_dataset = np.loadtxt(sys.argv[1])
-        print("Input dataset: ", sys.argv[1])
         register_labels(input_dataset)
-        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(input_dataset, 10)
 
-        # TODO: anything else to add?
+        print("Input dataset: ", input_dataset)
+
+        # TODO: Implement cross_validation
+        #trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(input_dataset, 10)
+
+        tree, depth = create_decision_tree(input_dataset)
+        print("Dataset tree depth:", depth)
+        plot_decision_tree(tree, depth, "dataset_tree", depth_based=False)
+        plot_decision_tree(tree, depth, "dataset_tree_alternative", depth_based=True)
 
     else:
-        print("Clean dataset: ")
+        # Run clean and noisy
+        clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
+        noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
         register_labels(clean_dataset)
-        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
+        register_labels(noisy_dataset)
+
+        print("Clean dataset: ", clean_dataset)
+        print("Noisy dataset: ", noisy_dataset)
+
+        # TODO: Implement cross_validation
+        #trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
         
-        # tree, depth = create_decision_tree(clean_dataset)
-        # plot_decision_tree(tree, depth, "clean_tree")
-        # print("depth:", depth)
+        tree, depth = create_decision_tree(clean_dataset)
+        print("Clean dataset tree depth:", depth)
+        plot_decision_tree(tree, depth, "clean_tree")
+
+        # TODO: Implement cross_validation
+        #trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(noisy_dataset, 10)
+
+        tree, depth = create_decision_tree(noisy_dataset)
+        print("Noisy dataset tree depth:", depth)
+        plot_decision_tree(tree, depth, "noisy_tree", depth_based=False)
 
         # validation set taken from training set
         # pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
-        # plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
         # print("depth:", pruned_depth)
-
-        # # Testing
-        # print(cal_entropy(small_dataset))
 
