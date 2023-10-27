@@ -3,6 +3,7 @@
 import numpy as np
 import math
 import random
+import sys
 
 from visualisation import plot_decision_tree
 
@@ -240,18 +241,29 @@ if __name__ == "__main__":
     # print("Data", small_dataset)
     # find_split(small_dataset)
 
-    register_labels(clean_dataset)
-    trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
-    
-    # tree, depth = create_decision_tree(clean_dataset)
-    # plot_decision_tree(tree, depth, "clean_tree")
-    # print("depth:", depth)
+    # Run input dataset if exists
+    if len(sys.argv) > 1:
+        input_dataset = np.loadtxt(sys.argv[1])
+        print("Input dataset: ", sys.argv[1])
+        register_labels(input_dataset)
+        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(input_dataset, 10)
 
-    # validation set taken from training set
-    # pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
-    # plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
-    # print("depth:", pruned_depth)
+        # TODO: anything else to add?
 
-    # # Testing
-    # print(cal_entropy(small_dataset))
+    else:
+        print("Clean dataset: ")
+        register_labels(clean_dataset)
+        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
+        
+        # tree, depth = create_decision_tree(clean_dataset)
+        # plot_decision_tree(tree, depth, "clean_tree")
+        # print("depth:", depth)
+
+        # validation set taken from training set
+        # pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
+        # plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
+        # print("depth:", pruned_depth)
+
+        # # Testing
+        # print(cal_entropy(small_dataset))
 
