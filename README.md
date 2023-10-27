@@ -4,11 +4,11 @@ Based on WIFI signal strengths collected from a mobile phone, a decision tree al
 
 ## Usage
 
-Option 1: Default datasets ("WIFI db/clean dataset.txt" and "WIFI db/noisy dataset.txt")
+- Option 1: Default datasets ("_WIFI_db/clean dataset.txt_" and "_WIFI_db/noisy dataset.txt_")
 
-Run **python decision_tree.py**
+    Run **python decision_tree.py**
 
 
-Option 2: New dataset
+- Option 2: New dataset
 
-Run **python decision_tree.py _<path to dataset>_ **
+    Run **python decision_tree.py \<**_path to dataset_**>**
