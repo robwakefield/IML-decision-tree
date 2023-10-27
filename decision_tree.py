@@ -13,7 +13,6 @@ from visualisation import plot_decision_tree
 #   { 'attribute', 'value', 'left', 'right' }
 
 labels = []
-no_of_labels = -1
 
 def label_to_index(label):
     return np.where(labels == label)[0]
@@ -21,6 +20,10 @@ def label_to_index(label):
 def no_of_labels():
     return len(labels)
 
+def register_labels(dataset):
+    global labels
+    labels = np.unique(dataset[:, -1])
+    # print(no_of_labels())
 
 # Readable function to return the label of a sample
 def get_label(sample):
@@ -111,6 +114,9 @@ def decision_tree_learning(training_dataset, depth):
     
         return (node, max(l_depth, r_depth))
     
+def create_decision_tree(dataset):
+    return decision_tree_learning(dataset, 0)
+    
 def evaluate_data(test_data, tree):
     if is_leaf_node(tree):
         return (get_label(test_data), tree['value'])
@@ -121,12 +127,11 @@ def evaluate_data(test_data, tree):
 
 def evaluate(test_dataset, tree):
     confusion_mat = np.zeros((no_of_labels(), no_of_labels()))
-    sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
+    # sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
     for test in test_dataset:
-        # actual, predict = evaluate_data(test, tree)
-        a, b = evaluate_data(test, tree)
-        confusion_mat[label_to_index(a), label_to_index(b)] += 1
-    # print(confusion_mat)
+        actual, predict = evaluate_data(test, tree)
+        confusion_mat[label_to_index(actual), label_to_index(predict)] += 1
+    print(confusion_mat)
     return confusion_mat
     
 def cal_accuracy(confusion_matrix):
@@ -135,6 +140,7 @@ def cal_accuracy(confusion_matrix):
     assert(total > 0)
     return T / total
     
+# validation set taken from training set
 def prune_tree(validation_set, tree):
     return test_tree_for_pruning(validation_set, tree, 0)
     
@@ -196,9 +202,30 @@ def split_folds_dataset(dataset, fold_no):
     folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
     fold_list = []
     for i, f in enumerate(folds):
-        training_list = [j for s in folds[:i] + folds[i+1:] for j in s]
-        fold_list.append((f, training_list))
-        
+        training_list = np.array([j for s in folds[:i] + folds[i+1:] for j in s])
+        fold_list.append((np.array(f), training_list))
+        print(f"test set", np.array(f), "\ntraining set\n", training_list)
+    return fold_list
+
+def cross_validation(dataset, fold_no):
+    fold_list = split_folds_dataset(dataset, fold_no)
+    tree_list = []
+    depth_list = []
+    confusion_matrix_list = []
+    accuracy_list =[]
+    for i, (test_dataset, training_dataset) in enumerate(fold_list):
+        (tree, depth) = create_decision_tree(training_dataset)
+        # print(tree, depth)
+        confusion_matrix = evaluate(test_dataset, tree)
+        accuracy = cal_accuracy(confusion_matrix)
+        tree_list.append(tree)
+        depth_list.append(depth)
+        confusion_matrix_list.append(confusion_matrix)
+        accuracy_list.append(accuracy)
+        print(f"Confusion Matrix of Fold {i}:\n", confusion_matrix, f"Accuracy:", accuracy)
+    best_fold = accuracy_list.index(max(accuracy_list))
+    print(confusion_matrix_list[best_fold], accuracy_list[best_fold])
+    return (tree_list, depth_list, confusion_matrix_list, accuracy_list, best_fold)
 
 if __name__ == "__main__":
     clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
@@ -209,19 +236,21 @@ if __name__ == "__main__":
     # print("noisy dataset")
     # print(noisy_dataset)
 
-    # small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
+    small_dataset = np.loadtxt("wifi_db/small_dataset.txt")
     # print("Data", small_dataset)
     # find_split(small_dataset)
-    
-    labels = np.unique(clean_dataset[:, -1])
-    
-    tree, depth = decision_tree_learning(clean_dataset, 0)
-    plot_decision_tree(tree, depth, "clean_tree")
-    print("depth:", depth)
 
-    pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
-    plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
-    print("depth:", pruned_depth)
+    register_labels(clean_dataset)
+    trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
+    
+    # tree, depth = create_decision_tree(clean_dataset)
+    # plot_decision_tree(tree, depth, "clean_tree")
+    # print("depth:", depth)
+
+    # validation set taken from training set
+    # pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
+    # plot_decision_tree(pruned_tree, pruned_depth, "pruned_tree")
+    # print("depth:", pruned_depth)
 
     # # Testing
     # print(cal_entropy(small_dataset))
