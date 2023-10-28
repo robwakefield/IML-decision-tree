@@ -237,10 +237,9 @@ if __name__ == "__main__":
 
         print("Input dataset: ", input_dataset)
 
-        # TODO: Implement cross_validation
-        #trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(input_dataset, 10)
+        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(input_dataset, 10)
 
-        tree, depth = create_decision_tree(input_dataset)
+        tree, depth = trees[fold_no], depths[fold_no]
         print("Dataset tree depth:", depth)
         plot_decision_tree(tree, depth, "dataset_tree", depth_based=False)
         plot_decision_tree(tree, depth, "dataset_tree_alternative", depth_based=True)
@@ -255,17 +254,15 @@ if __name__ == "__main__":
         print("Clean dataset: ", clean_dataset)
         print("Noisy dataset: ", noisy_dataset)
 
-        # TODO: Implement cross_validation
-        #trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
+        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
         
-        tree, depth = create_decision_tree(clean_dataset)
+        tree, depth = trees[fold_no], depths[fold_no]
         print("Clean dataset tree depth:", depth)
         plot_decision_tree(tree, depth, "clean_tree")
 
-        # TODO: Implement cross_validation
-        #trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(noisy_dataset, 10)
+        trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(noisy_dataset, 10)
 
-        tree, depth = create_decision_tree(noisy_dataset)
+        tree, depth = trees[fold_no], depths[fold_no]
         print("Noisy dataset tree depth:", depth)
         plot_decision_tree(tree, depth, "noisy_tree", depth_based=False)
 
