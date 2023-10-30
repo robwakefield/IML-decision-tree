@@ -132,7 +132,7 @@ def evaluate(test_dataset, tree):
     for test in test_dataset:
         actual, predict = evaluate_data(test, tree)
         confusion_mat[label_to_index(actual), label_to_index(predict)] += 1
-    print(confusion_mat)
+    # print(confusion_mat)
     return confusion_mat
     
 def cal_accuracy(confusion_matrix):
@@ -205,9 +205,10 @@ def split_folds_dataset(dataset, fold_no):
     for i, f in enumerate(folds):
         training_list = np.array([j for s in folds[:i] + folds[i+1:] for j in s])
         fold_list.append((np.array(f), training_list))
-        print(f"test set", np.array(f), "\ntraining set\n", training_list)
+        print("test set", np.array(f), "\ntraining set\n", training_list)
     return fold_list
 
+# does FOLD_NO-fold cross validation and returns all folds and the fold with highest accuracy
 def cross_validation(dataset, fold_no):
     fold_list = split_folds_dataset(dataset, fold_no)
     tree_list = []
@@ -223,10 +224,13 @@ def cross_validation(dataset, fold_no):
         depth_list.append(depth)
         confusion_matrix_list.append(confusion_matrix)
         accuracy_list.append(accuracy)
-        print(f"Confusion Matrix of Fold {i}:\n", confusion_matrix, f"Accuracy:", accuracy)
+        print(f"Confusion Matrix of Fold {i}:\n", confusion_matrix, "Accuracy:", accuracy)
     best_fold = accuracy_list.index(max(accuracy_list))
-    print(confusion_matrix_list[best_fold], accuracy_list[best_fold])
+    print(f"Confusion Matrix of Best Fold (Fold {best_fold}):\n", confusion_matrix_list[best_fold], f"Accuracy:", accuracy_list[best_fold], "\nAverage accuracy:", average_accuracy(accuracy_list))
     return (tree_list, depth_list, confusion_matrix_list, accuracy_list, best_fold)
+
+def average_accuracy(accuracy_list):
+    return sum(accuracy_list) / len(accuracy_list)
 
 if __name__ == "__main__":
 
