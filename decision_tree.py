@@ -75,7 +75,7 @@ def split_dataset(dataset, attr, value):
     r_dataset = dataset[dataset[:, attr] > value]
     return (l_dataset, r_dataset)
 
-def decision_tree_learning(training_dataset, depth):
+def decision_tree_learning(training_dataset, depth, prev_left_size=None, prev_right_size=None):
     if len(training_dataset) == 0:
         return ({
                 'attribute' : None,
@@ -98,9 +98,20 @@ def decision_tree_learning(training_dataset, depth):
         split_attr, split_val = find_split(training_dataset)
         l_dataset, r_dataset = split_dataset(training_dataset, split_attr, split_val)
 
+        # If find_split() fails to split, return leaf node to stop recursion
+        # (E.g. when all attributes are the same)
+        if (prev_left_size == len(l_dataset) and prev_right_size == len(r_dataset)):
+            # Construct Leaf Node
+            return ({
+                    'attribute' : None,
+                    'value': get_label(training_dataset[0]),
+                    'left' : None,
+                    'right' : None
+                    }, depth)
+
         # Recursively run decision tree on L and R branches
-        l_branch, l_depth = decision_tree_learning(l_dataset, depth+1)
-        r_branch, r_depth = decision_tree_learning(r_dataset, depth+1)
+        l_branch, l_depth = decision_tree_learning(l_dataset, depth+1, len(l_dataset), len(r_dataset))
+        r_branch, r_depth = decision_tree_learning(r_dataset, depth+1, len(l_dataset), len(r_dataset))
         
         # Construct the tree with root node as split value
         node = {
@@ -203,12 +214,15 @@ def split_folds_dataset(dataset, fold_no):
 
 # does FOLD_NO-fold cross validation and returns all folds and the fold with highest accuracy
 def cross_validation(dataset, fold_no):
+    print("Running Cross Validation")
     fold_list = split_folds_dataset(dataset, fold_no)
     tree_list = []
     depth_list = []
     confusion_matrix_list = []
     accuracy_list =[]
     for i, (test_dataset, training_dataset) in enumerate(fold_list):
+        progress = "#" * i
+        print(progress+"\r", end="")
         (tree, depth) = create_decision_tree(training_dataset)
         confusion_matrix = evaluate(test_dataset, tree)
         accuracy = cal_accuracy(confusion_matrix)
