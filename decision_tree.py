@@ -43,8 +43,6 @@ def find_split(dataset):
         # Sort on attribute value
         sorted_dataset = dataset[np.argsort(dataset[:, attr])]
         for row in range(sorted_dataset.shape[0] - 1):
-            if sorted_dataset[row, -1] == sorted_dataset[row + 1, -1]:
-                continue
             # Average of two values
             value = (sorted_dataset[row, attr] + sorted_dataset[row + 1, attr]) / 2
             left, right = split_dataset(dataset, attr, value)
