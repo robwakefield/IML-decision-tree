@@ -247,10 +247,10 @@ if __name__ == "__main__":
 
         tree, depth = trees[fold_no], depths[fold_no]
         print("Dataset tree depth of Best Fold:", depth)
-        print("Confusion Matrix of Best Fold:", confusion_matrices[fold_no])
+        print("Confusion Matrix of Best Fold:\n", confusion_matrices[fold_no])
         print("Accuracy of Best Fold:", accuracies[fold_no])
 
-        print("Confusion Matrix:", sum(confusion_matrices))
+        print("Confusion Matrix:\n", sum(confusion_matrices))
         print("Average Accuracy:", cal_accuracy(sum(confusion_matrices)))
         plot_decision_tree(tree, depth, "dataset_tree", depth_based=False)
         plot_decision_tree(tree, depth, "dataset_tree_alternative", depth_based=True)
