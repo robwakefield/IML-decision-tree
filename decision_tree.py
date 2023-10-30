@@ -24,7 +24,6 @@ def no_of_labels():
 def register_labels(dataset):
     global labels
     labels = np.unique(dataset[:, -1])
-    # print(no_of_labels())
 
 # Readable function to return the label of a sample
 def get_label(sample):
@@ -130,7 +129,6 @@ def evaluate(test_dataset, tree):
     for test in test_dataset:
         actual, predict = evaluate_data(test, tree)
         confusion_mat[label_to_index(actual), label_to_index(predict)] += 1
-    # print(confusion_mat)
     return confusion_mat
     
 def cal_accuracy(confusion_matrix):
@@ -189,9 +187,7 @@ def test_tree_for_pruning(validation_set, tree, depth):
 	    return (new_tree, merged_confusion_matrix, max(left_depth, right_depth))
     else:
         # Prune
-        print('PRUNED')
         new_depth = depth - 1
-        print(pruned_current_tree, pruned_confusion_matrix, new_depth)
         return (pruned_current_tree, pruned_confusion_matrix, new_depth)
     	
 
@@ -203,7 +199,6 @@ def split_folds_dataset(dataset, fold_no):
     for i, f in enumerate(folds):
         training_list = np.array([j for s in folds[:i] + folds[i+1:] for j in s])
         fold_list.append((np.array(f), training_list))
-        print("test set", np.array(f), "\ntraining set\n", training_list)
     return fold_list
 
 # does FOLD_NO-fold cross validation and returns all folds and the fold with highest accuracy
@@ -215,16 +210,13 @@ def cross_validation(dataset, fold_no):
     accuracy_list =[]
     for i, (test_dataset, training_dataset) in enumerate(fold_list):
         (tree, depth) = create_decision_tree(training_dataset)
-        # print(tree, depth)
         confusion_matrix = evaluate(test_dataset, tree)
         accuracy = cal_accuracy(confusion_matrix)
         tree_list.append(tree)
         depth_list.append(depth)
         confusion_matrix_list.append(confusion_matrix)
         accuracy_list.append(accuracy)
-        print(f"Confusion Matrix of Fold {i}:\n", confusion_matrix, "Accuracy:", accuracy)
     best_fold = accuracy_list.index(max(accuracy_list))
-    print(f"Confusion Matrix of Best Fold (Fold {best_fold}):\n", confusion_matrix_list[best_fold], f"Accuracy:", accuracy_list[best_fold], "\nAverage accuracy:", average_accuracy(accuracy_list))
     return (tree_list, depth_list, confusion_matrix_list, accuracy_list, best_fold)
 
 def average_accuracy(accuracy_list):
@@ -237,12 +229,15 @@ if __name__ == "__main__":
         input_dataset = np.loadtxt(sys.argv[1])
         register_labels(input_dataset)
 
-        print("Input dataset: ", input_dataset)
-
         trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(input_dataset, 10)
 
         tree, depth = trees[fold_no], depths[fold_no]
-        print("Dataset tree depth:", depth)
+        print("Dataset tree depth of Best Fold:", depth)
+        print("Confusion Matrix of Best Fold:", confusion_matrices[fold_no])
+        print("Accuracy of Best Fold:", accuracies[fold_no])
+
+        print("Confusion Matrix:", sum(confusion_matrices))
+        print("Average Accuracy:", cal_accuracy(sum(confusion_matrices)))
         plot_decision_tree(tree, depth, "dataset_tree", depth_based=False)
         plot_decision_tree(tree, depth, "dataset_tree_alternative", depth_based=True)
 
@@ -252,9 +247,6 @@ if __name__ == "__main__":
         noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
         register_labels(clean_dataset)
         register_labels(noisy_dataset)
-
-        print("Clean dataset: ", clean_dataset)
-        print("Noisy dataset: ", noisy_dataset)
 
         trees, depths, confusion_matrices, accuracies, fold_no = cross_validation(clean_dataset, 10)
         
@@ -267,8 +259,4 @@ if __name__ == "__main__":
         tree, depth = trees[fold_no], depths[fold_no]
         print("Noisy dataset tree depth:", depth)
         plot_decision_tree(tree, depth, "noisy_tree", depth_based=False)
-
-        # validation set taken from training set
-        # pruned_tree, _, pruned_depth = prune_tree(clean_dataset, tree)
-        # print("depth:", pruned_depth)
 
