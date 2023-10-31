@@ -15,15 +15,18 @@ from visualisation import plot_decision_tree
 
 labels = []
 
-def label_to_index(label):
-    return np.where(labels == label)[0]
-
-def no_of_labels():
-    return len(labels)
-
+# Initialise labels
 def register_labels(dataset):
     global labels
     labels = np.unique(dataset[:, -1])
+
+# Get index of label
+def label_to_index(label):
+    return np.where(labels == label)[0]
+
+# Get number of labels
+def no_of_labels():
+    return len(labels)
 
 # Readable function to return the label of a sample
 def get_label(sample):
@@ -35,29 +38,41 @@ def is_leaf_node(node):
 
 # Chooses the attribute and the value that results in the highest information gain
 def find_split(dataset):
-    # Store all information gain of different attributes and values
-    info_gain = {}
+    # Store all information gain of different attributes and values 
+    # info_gain_dict = {(attribute, value): info_gain}
+    info_gain_dict = {}
 
     for attr in range(dataset.shape[1] - 1):
         # Sort on attribute value
         sorted_dataset = dataset[np.argsort(dataset[:, attr])]
         for row in range(sorted_dataset.shape[0] - 1):
-            # Average of two values
-            value = (sorted_dataset[row, attr] + sorted_dataset[row + 1, attr]) / 2
-            left, right = split_dataset(dataset, attr, value)
-            info_gain[(attr, value)] = cal_info_gain(dataset, left, right)
+            # split_value is the average of the values of two examples on a single attribute
+            split_value = (sorted_dataset[row, attr] + sorted_dataset[row + 1, attr]) / 2
 
-    (selected_attr, selected_value) = max(info_gain, key=lambda k: info_gain[k])
+            # Split the dataset into two according to the split point
+            left, right = split_dataset(dataset, attr, split_value)
+
+            # Store the info gain of the current split point to info_gain_dict
+            info_gain_dict[(attr, split_value)] = cal_info_gain(dataset, left, right)
+
+    # The split point with the maximum info gain will be selected
+    (selected_attr, selected_value) = max(info_gain_dict, key=lambda k: info_gain_dict[k])
     return (selected_attr, selected_value)
 
 # Calculate entropy of dataset
 def cal_entropy(dataset):
-    rooms = dataset[:, -1]
-    counts = np.unique(rooms, return_counts=True)[1]
-    room_prob = counts / dataset.shape[0]
+    labels = dataset[:, -1]
+
+    # counts = [c1, c2, c3, ...] where ci is the number of examples of class i
+    counts = np.unique(labels, return_counts=True)[1]
+
+    # prob = [p1, p2, p3, ...] where pi is probability of class i in this dataset
+    prob = counts / dataset.shape[0]
+
+    # Entropy = -SUM(pi * log2(pi))
     entropy = 0
-    for p in room_prob:
-        entropy += -p * math.log2(p)
+    for p in prob:
+        entropy -= p * math.log2(p)
     return entropy
 
 # Calculate information gain after spitting original dataset into left and right
@@ -75,6 +90,7 @@ def split_dataset(dataset, attr, value):
     r_dataset = dataset[dataset[:, attr] > value]
     return (l_dataset, r_dataset)
 
+# Recursive helper function to create the decision tree
 def decision_tree_learning(training_dataset, depth, prev_left_size=None, prev_right_size=None):
     if len(training_dataset) == 0:
         return ({
@@ -123,9 +139,11 @@ def decision_tree_learning(training_dataset, depth, prev_left_size=None, prev_ri
     
         return (node, max(l_depth, r_depth))
     
+# Inital function for creating decision tree
 def create_decision_tree(dataset):
     return decision_tree_learning(dataset, 0)
     
+# Give result to one example in a tuple, (Actual Class, Predicted Class)
 def evaluate_data(test_data, tree):
     if is_leaf_node(tree):
         return (get_label(test_data), tree['value'])
@@ -134,24 +152,19 @@ def evaluate_data(test_data, tree):
     else:
         return evaluate_data(test_data, tree['left'])
 
+# Give the confusion matrix of the dataset on a tree
 def evaluate(test_dataset, tree):
     confusion_mat = np.zeros((no_of_labels(), no_of_labels()))
-    # sorted_dataset = test_dataset[np.argsort(test_dataset[:, -1])]
     for test in test_dataset:
         actual, predict = evaluate_data(test, tree)
         confusion_mat[label_to_index(actual), label_to_index(predict)] += 1
     return confusion_mat
     
-def cal_accuracy(confusion_matrix):
-    T = np.sum(np.diag(confusion_matrix))
-    total = np.sum(confusion_matrix)
-    assert(total > 0)
-    return T / total
-    
-# validation set taken from training set
+# Prune tree from validation set (NOT MARKED)
 def prune_tree(validation_set, tree):
     return test_tree_for_pruning(validation_set, tree, 0)
     
+# Recursive helper function for prune_tree (NOT MARKED)
 def test_tree_for_pruning(validation_set, tree, depth):
     if (validation_set.shape[0] == 0):
     	return (tree, np.zeros((no_of_labels(), no_of_labels())), depth)
@@ -202,9 +215,10 @@ def test_tree_for_pruning(validation_set, tree, depth):
         return (pruned_current_tree, pruned_confusion_matrix, new_depth)
     	
 
-# split dataset into folds, array of (testing_set, training_set)
+# Split dataset into folds, array of (testing_set, training_set)
 def split_folds_dataset(dataset, fold_no):
-    np.random.default_rng().shuffle(dataset)
+    seed = 22
+    np.random.default_rng(22).shuffle(dataset)
     folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
     fold_list = []
     for i, f in enumerate(folds):
@@ -214,7 +228,6 @@ def split_folds_dataset(dataset, fold_no):
 
 # does FOLD_NO-fold cross validation and returns all folds and the fold with highest accuracy
 def cross_validation(dataset, fold_no):
-    print("Running Cross Validation")
     fold_list = split_folds_dataset(dataset, fold_no)
     tree_list = []
     depth_list = []
@@ -235,76 +248,75 @@ def cross_validation(dataset, fold_no):
     best_fold = accuracy_list.index(max(accuracy_list))
     return (tree_list, depth_list, confusion_matrix_list, best_fold)
 
-def average_confusion_matrix(confusion_matrix_list):
-    return sum(confusion_matrix_list) / len(confusion_matrix_list)
+# Get the accuracy of each class from a confusion matrix
+def cal_accuracy(confusion_matrix):
+    correct_examples = np.sum(np.diag(confusion_matrix))
+    total = np.sum(confusion_matrix)
+    assert(total > 0)
+    return correct_examples / total
 
-def average_accuracy(accuracy_list):
-    return cal_accuracy(sum(accuracy_list))
+# Get the precision of each class from a confusion matrix
+def cal_precision(confusion_matrix, i):
+    tp = confusion_matrix[i][i]
+    fp = np.sum(confusion_matrix[:, i]) - tp
+    return tp / (tp + fp)
 
-def cal_precision(confusion_matrix):
-    precisions = []
-    for i in range(len(confusion_matrix)):
-        precisions.append(confusion_matrix[i, i] / sum(confusion_matrix[:, i]))
-    return precisions
+# Get the recall of each class from a confusion matrix
+def cal_recall(confusion_matrix, i):
+    tp = confusion_matrix[i][i]
+    fn = np.sum(confusion_matrix[i]) - tp
+    return tp / (tp + fn)
 
-def cal_recall(confusion_matrix):
-    recalls = []
-    for i in range(len(confusion_matrix)):
-        recalls.append(confusion_matrix[i, i] / sum(confusion_matrix[i, :]))
-    return recalls
+# Get the F1_measure of each class from a confusion matrix
+def cal_F1_measure(confusion_matrix, i):
+    recall = cal_recall(confusion_matrix, i)
+    precision = cal_precision(confusion_matrix, i)
+    return (2 * precision * recall) / (precision + recall)
 
-def cal_F1_measure(confusion_matrix):
-    F1_measures = []
-    precisions = cal_precision(confusion_matrix)
-    recalls = cal_recall(confusion_matrix)
-    for i in range(len(confusion_matrix)):
-        F1_measure = (2 * precisions[i] * recalls[i]) / (precisions[i] + recalls[i])
-        F1_measures.append(F1_measure)
-    return F1_measures
+def print_metrics(confusion_matrix):
+    print("Confusion Matrix:\n", confusion_matrix)
+    print("Accuracy:", cal_accuracy(confusion_matrix))
 
-def print_metrics(confusion_matrix_list):
-    avg_mat = average_confusion_matrix(confusion_matrix_list)
-    print("Average Confusion Matrix:\n", avg_mat)
-    print("Average Accuracy:", cal_accuracy(avg_mat))
-    print("Precisions:", cal_precision(avg_mat))
-    print("Recalls:", cal_recall(avg_mat))
-    print("F1 Measures:", cal_F1_measure(avg_mat))
+    total_precision = 0
+    total_recall = 0
+    total_f1 = 0
+
+    for i in range(no_of_labels()):
+        precision = cal_precision(confusion_matrix, i)
+        recall = cal_recall(confusion_matrix, i)
+        f1 = cal_F1_measure(confusion_matrix, i)
+
+        total_precision += precision
+        total_recall += recall
+        total_f1 += f1
+
+        print(f"Class {i+1}: Precision: {precision} Recall: {recall} F1-Measure: {f1}")
+
+    print("Macro-Averaged Precision:", total_precision / no_of_labels())
+    print("Macro-Averaged Recall:", total_recall / no_of_labels())
+    print("Macro-Averaged F1:", total_f1 / no_of_labels())
+
+folds = 10
 
 if __name__ == "__main__":
 
-    # Run input dataset if specified
-    if len(sys.argv) > 1:
+    if len(sys.argv) != 2:
+        print("Invalid number of arguments")
+    else:
         input_dataset = np.loadtxt(sys.argv[1])
         register_labels(input_dataset)
 
-        trees, depths, confusion_matrices, fold_no = cross_validation(input_dataset, 10)
+        # Create a decision tree from the input_dataset
+        print('Training on the Input Dataset...')
+        tree, depth = create_decision_tree(input_dataset)
 
-        tree, depth = trees[fold_no], depths[fold_no]
-        print("Dataset tree depth of Best Fold:", depth)
-        print("Confusion Matrix of Best Fold:\n", confusion_matrices[fold_no])
-        print("Accuracy of Best Fold:", cal_accuracy(confusion_matrices[fold_no]))
-
-        print_metrics(confusion_matrices)
+        # Create an image of the tree
+        print('Ploting Decision Tree...')
         plot_decision_tree(tree, depth, "dataset_tree", depth_based=False)
         plot_decision_tree(tree, depth, "dataset_tree_alternative", depth_based=True)
 
-    else:
-        # Run clean and noisy
-        clean_dataset = np.loadtxt("wifi_db/clean_dataset.txt")
-        noisy_dataset = np.loadtxt("wifi_db/noisy_dataset.txt")
-        register_labels(clean_dataset)
-        register_labels(noisy_dataset)
-
-        trees, depths, confusion_matrices, fold_no = cross_validation(clean_dataset, 10)
-        
-        tree, depth = trees[fold_no], depths[fold_no]
-        print("Clean dataset tree depth:", depth)
-        plot_decision_tree(tree, depth, "clean_tree")
-        print_metrics(confusion_matrices)
-
-        trees, depths, confusion_matrices, fold_no = cross_validation(noisy_dataset, 10)
-
-        tree, depth = trees[fold_no], depths[fold_no]
-        print("Noisy dataset tree depth:", depth)
-        plot_decision_tree(tree, depth, "noisy_tree", depth_based=False)
-        print_metrics(confusion_matrices)
+        # Test the model using cross vaidation
+        print("Running Cross Validation...")
+        trees, depths, confusion_matrices, best_fold_no = cross_validation(input_dataset, folds)
+        print('Result after cross validation:')
+        print_metrics(sum(confusion_matrices))
