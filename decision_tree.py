@@ -217,8 +217,7 @@ def test_tree_for_pruning(validation_set, tree, depth):
 
 # Split dataset into folds, array of (testing_set, training_set)
 def split_folds_dataset(dataset, fold_no):
-    seed = 22
-    np.random.default_rng(22).shuffle(dataset)
+    np.random.default_rng().shuffle(dataset)
     folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
     fold_list = []
     for i, f in enumerate(folds):
@@ -229,10 +228,7 @@ def split_folds_dataset(dataset, fold_no):
 # does FOLD_NO-fold cross validation and returns all folds and the fold with highest accuracy
 def cross_validation(dataset, fold_no):
     fold_list = split_folds_dataset(dataset, fold_no)
-    tree_list = []
-    depth_list = []
     confusion_matrix_list = []
-    accuracy_list =[]
     for i, (test_dataset, training_dataset) in enumerate(fold_list):
         
         progress = "#" * i
@@ -240,15 +236,10 @@ def cross_validation(dataset, fold_no):
 
         (tree, depth) = create_decision_tree(training_dataset)
         confusion_matrix = evaluate(test_dataset, tree)
-        accuracy = cal_accuracy(confusion_matrix)
-        tree_list.append(tree)
-        depth_list.append(depth)
         confusion_matrix_list.append(confusion_matrix)
-        accuracy_list.append(accuracy)
-    best_fold = accuracy_list.index(max(accuracy_list))
-    return (tree_list, depth_list, confusion_matrix_list, best_fold)
+    return sum(confusion_matrix_list)
 
-# Get the accuracy of each class from a confusion matrix
+# Get the accuracy from a confusion matrix
 def cal_accuracy(confusion_matrix):
     correct_examples = np.sum(np.diag(confusion_matrix))
     total = np.sum(confusion_matrix)
@@ -290,11 +281,11 @@ def print_metrics(confusion_matrix):
         total_recall += recall
         total_f1 += f1
 
-        print(f"Class {i+1}: Precision: {precision} Recall: {recall} F1-Measure: {f1}")
+        print(f"Class {i+1}: Precision: {precision:.4f} Recall: {recall:.4f} F1-Measure: {f1:.4f}")
 
-    print("Macro-Averaged Precision:", total_precision / no_of_labels())
-    print("Macro-Averaged Recall:", total_recall / no_of_labels())
-    print("Macro-Averaged F1:", total_f1 / no_of_labels())
+    print(f"Macro-Averaged Precision: {total_precision / no_of_labels():.4f}", )
+    print(f"Macro-Averaged Recall: {total_recall / no_of_labels():.4f}", )
+    print(f"Macro-Averaged F1: {total_f1 / no_of_labels():.4f}", )
 
 folds = 10
 
@@ -303,6 +294,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Invalid number of arguments")
     else:
+        # Load data and register the labels
         input_dataset = np.loadtxt(sys.argv[1])
         register_labels(input_dataset)
 
@@ -317,6 +309,7 @@ if __name__ == "__main__":
 
         # Test the model using cross vaidation
         print("Running Cross Validation...")
-        trees, depths, confusion_matrices, best_fold_no = cross_validation(input_dataset, folds)
+        confusion_matrix = cross_validation(input_dataset, folds)
+
         print('Result after cross validation:')
-        print_metrics(sum(confusion_matrices))
+        print_metrics(confusion_matrix)
