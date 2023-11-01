@@ -217,7 +217,7 @@ def test_tree_for_pruning(validation_set, tree, depth):
 
 # Split dataset into folds, array of (testing_set, training_set)
 def split_folds_dataset(dataset, fold_no):
-    np.random.default_rng(22).shuffle(dataset)
+    np.random.default_rng().shuffle(dataset)
     fold_length = int(len(dataset) / fold_no)
     fold_list = []
     for i in range(fold_no):
