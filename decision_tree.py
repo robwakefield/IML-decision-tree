@@ -217,12 +217,20 @@ def test_tree_for_pruning(validation_set, tree, depth):
 
 # Split dataset into folds, array of (testing_set, training_set)
 def split_folds_dataset(dataset, fold_no):
-    np.random.default_rng().shuffle(dataset)
-    folds = [fold.tolist() for fold in np.array_split(dataset, fold_no)]
+    np.random.default_rng(22).shuffle(dataset)
+    fold_length = int(len(dataset) / fold_no)
     fold_list = []
-    for i, f in enumerate(folds):
-        training_list = np.array([j for s in folds[:i] + folds[i+1:] for j in s])
-        fold_list.append((np.array(f), training_list))
+    for i in range(fold_no):
+        test_start = i * fold_length
+        test_end = (i + 1) * fold_length
+        test_set = dataset[test_start:test_end]
+
+        # Handle the last fold for remaining data
+        if i == fold_no - 1:
+            test_end = len(dataset)
+        
+        training_set = np.append(dataset[:test_start], dataset[test_end:], axis=0)
+        fold_list.append((test_set, training_set))
     return fold_list
 
 # does FOLD_NO-fold cross validation and returns all folds and the fold with highest accuracy
@@ -264,6 +272,7 @@ def cal_F1_measure(confusion_matrix, i):
     precision = cal_precision(confusion_matrix, i)
     return (2 * precision * recall) / (precision + recall)
 
+# Print the metrics according to the confusion_matrix
 def print_metrics(confusion_matrix):
     print("Confusion Matrix:\n", confusion_matrix)
     print("Accuracy:", cal_accuracy(confusion_matrix))
