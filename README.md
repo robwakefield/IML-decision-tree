@@ -1,6 +1,8 @@
-# Introduction to Machine Learning - Decision Tree Coursework
+# Decision Tree
 
-Based on WIFI signal strengths collected from a mobile phone, a decision tree algorithm was implemented to determine its indoor location.
+Implementation of a decision tree algorithm to determine an indoor location based on WIFI signal strengths collected by a mobile phone  
+
+Completed as part of a group coursework
 
 ## Usage
 
